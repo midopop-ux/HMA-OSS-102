@@ -71,8 +71,14 @@ class AboutFragment : Fragment(R.layout.fragment_about) {
                 linkTelegram.background.alpha = 0xAA
             }
 
-            setOnClickUrl(linkGithub, "https://github.com/frknkrc44/HMA-OSS")
-            setOnClickUrl(linkTelegram, "https://t.me/aerathfuns")
+            setOnClickUrl(linkGithub, "https://github.com/midopop-ux/HMA-OSS-102")
+
+            linkTelegram.apply {
+                isEnabled = false
+                isClickable = false
+                alpha = 0.35f
+                setOnClickListener(null)
+            }
 
             appInfoTop.backgroundTintList = tint
             (appName.parent as View).backgroundTintList = tint
@@ -112,6 +118,7 @@ class AboutFragment : Fragment(R.layout.fragment_about) {
         with(binding.listHmaOss) {
             addDevItem(this, R.drawable.cont_fk, "frknkrc44", "HMA-OSS Developer", "https://github.com/frknkrc44")
             addDevItem(this, R.drawable.cont_oukaromf, "OukaroMF", "HMA-OSS Alt Icon Designer", "https://github.com/OukaroMF")
+            addDevItem(this, R.drawable.cont_midopop, "midopop-ux", "Fork Developer", "https://github.com/midopop-ux")
         }
 
         // Original HMA devs

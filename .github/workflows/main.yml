@@ -80,6 +80,14 @@ jobs:
           mkdir -p final_apk
           cp app/build/outputs/apk/release/*.apk final_apk/HMA-102-v${{ env.APP_VERSION_NAME }}-release.apk
 
+      - name: Verify APK Signature
+        run: |
+          APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner 2>/dev/null | sort -V | tail -n 1)
+          if [ -n "$APKSIGNER" ]; then
+            echo "=== Verifying APK Signature ==="
+            "$APKSIGNER" verify --verbose --print-certs final_apk/*.apk || true
+          fi
+
       - name: Upload Release Artifact
         uses: actions/upload-artifact@v4
         with:

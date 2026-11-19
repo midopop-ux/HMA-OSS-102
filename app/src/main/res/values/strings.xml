@@ -227,7 +227,7 @@
         Although It is incorrect to detect specific app installation, yet not every app using root provides random package name support. In this case, detected apps that use root (such as Fake Location and Storage Isolation) is equal to detected root itself.\n\nAt the same time, some smart apps use various loopholes to acquire your app list, so that it can draw a persona for you.\n\nThis module provides some methods to test whether you have already hidden your applist nicely. Also, it can work as an Xposed module to hide some apps or reject app list requests to protect your privacy.
     </string>
     <string name="about_fork_description">
-        The original HMA project has become closed-source and their latest code didn\'t contain some of the latest changes, so I created this fork to continue it as open-source again.
+        The original HMA developer transitioned to Zygisk, which introduces numerous issues and instability. We created this fork to continue supporting the latest and modern Xposed framework (Modern libxposed API 102), which is much easier to work with, cleaner, and far more effective.
     </string>
     <string name="about_how_to_use_title">How to use this module</string>
     <string name="about_how_to_use_description_1">

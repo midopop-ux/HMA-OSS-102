@@ -23,16 +23,16 @@ object XposedHelpers {
     }
 
     fun getObjectField(obj: Any?, fieldName: String): Any? =
-        obj?.let { findField(it.javaClass, fieldName).get(it) }
+        if (obj == null) null else findField(obj.javaClass, fieldName).get(obj)
 
     fun getIntField(obj: Any?, fieldName: String): Int =
-        obj?.let { findField(it.javaClass, fieldName).getInt(it) } ?: 0
+        if (obj == null) 0 else findField(obj.javaClass, fieldName).getInt(obj)
 
     fun getBooleanField(obj: Any?, fieldName: String): Boolean =
-        obj?.let { findField(it.javaClass, fieldName).getBoolean(it) } ?: false
+        if (obj == null) false else findField(obj.javaClass, fieldName).getBoolean(obj)
 
     fun setBooleanField(obj: Any?, fieldName: String, value: Boolean) {
-        obj?.let { findField(it.javaClass, fieldName).setBoolean(it, value) }
+        if (obj != null) findField(obj.javaClass, fieldName).setBoolean(obj, value)
     }
 
     fun getStaticIntField(clazz: Class<*>, fieldName: String): Int {

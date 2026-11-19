@@ -165,6 +165,7 @@ dependencies {
     implementation(libs.com.github.topjohnwu.libsu.core)
     implementation(libs.dev.rikka.hidden.compat)
     implementation(libs.me.zhanghai.android.appiconloader)
+    compileOnly(libs.libxposed.api)
     compileOnly(libs.dev.rikka.hidden.stub)
 
     implementation(libs.androidx.appcompat.appcompat)

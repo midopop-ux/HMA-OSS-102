@@ -159,6 +159,67 @@ fun <K, V> MutableMap<K, V>.removeIf(predicate: (K, V) -> Boolean) {
     }
 }
 
+class CompatBeforeHooker(
+    private val targetMethod: Method,
+    private val callback: (XposedCompat.HookParam) -> Unit
+) : XposedInterface.Hooker {
+    @Throws(Throwable::class)
+    override fun intercept(chain: XposedInterface.Chain): Any? {
+        val origArgs = chain.args
+        val argsCopy = origArgs.toTypedArray()
+        val param = XposedCompat.HookParam(chain, targetMethod, chain.thisObject, argsCopy)
+
+        callback(param)
+
+        if (param.isResultSubstituted) {
+            return param.result
+        }
+
+        var modified = false
+        for (i in origArgs.indices) {
+            if (argsCopy[i] !== origArgs[i]) {
+                modified = true
+                break
+            }
+        }
+        return if (modified) {
+            chain.proceed(argsCopy)
+        } else {
+            chain.proceed()
+        }
+    }
+}
+
+class CompatAfterHooker(
+    private val targetMethod: Method,
+    private val callback: (XposedCompat.HookParam) -> Unit
+) : XposedInterface.Hooker {
+    @Throws(Throwable::class)
+    override fun intercept(chain: XposedInterface.Chain): Any? {
+        val origArgs = chain.args
+        val argsCopy = origArgs.toTypedArray()
+        val param = XposedCompat.HookParam(chain, targetMethod, chain.thisObject, argsCopy)
+
+        var caughtThrowable: Throwable? = null
+        try {
+            param.result = chain.proceed()
+        } catch (t: Throwable) {
+            caughtThrowable = t
+            param.throwable = t
+        }
+
+        callback(param)
+
+        if (param.throwable != null && param.throwable !== caughtThrowable) {
+            throw param.throwable!!
+        }
+        if (caughtThrowable != null && param.throwable != null) {
+            throw caughtThrowable
+        }
+        return param.result
+    }
+}
+
 fun Method.hookBefore(callback: (XposedCompat.HookParam) -> Unit): XposedCompat.Unhook {
     isAccessible = true
     try {
@@ -167,30 +228,7 @@ fun Method.hookBefore(callback: (XposedCompat.HookParam) -> Unit): XposedCompat.
 
     val handle = XposedCompat.module.hook(this)
         .setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE)
-        .intercept { chain ->
-            val origArgs = chain.args
-            val argsCopy = origArgs.toTypedArray()
-            val param = XposedCompat.HookParam(chain, this, chain.thisObject, argsCopy)
-
-            callback(param)
-
-            if (param.isResultSubstituted) {
-                return@intercept param.result
-            }
-
-            var modified = false
-            for (i in origArgs.indices) {
-                if (argsCopy[i] !== origArgs[i]) {
-                    modified = true
-                    break
-                }
-            }
-            if (modified) {
-                chain.proceed(argsCopy)
-            } else {
-                chain.proceed()
-            }
-        }
+        .intercept(CompatBeforeHooker(this, callback))
     return XposedCompat.Unhook(handle, this)
 }
 
@@ -202,28 +240,6 @@ fun Method.hookAfter(callback: (XposedCompat.HookParam) -> Unit): XposedCompat.U
 
     val handle = XposedCompat.module.hook(this)
         .setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE)
-        .intercept { chain ->
-            val origArgs = chain.args
-            val argsCopy = origArgs.toTypedArray()
-            val param = XposedCompat.HookParam(chain, this, chain.thisObject, argsCopy)
-
-            var caughtThrowable: Throwable? = null
-            try {
-                param.result = chain.proceed()
-            } catch (t: Throwable) {
-                caughtThrowable = t
-                param.throwable = t
-            }
-
-            callback(param)
-
-            if (param.throwable != null && param.throwable !== caughtThrowable) {
-                throw param.throwable!!
-            }
-            if (caughtThrowable != null && param.throwable != null) {
-                throw caughtThrowable
-            }
-            return@intercept param.result
-        }
+        .intercept(CompatAfterHooker(this, callback))
     return XposedCompat.Unhook(handle, this)
 }

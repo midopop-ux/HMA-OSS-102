@@ -55,21 +55,27 @@ object Utils {
     }
 
     fun startsWithMultiple(source: String, vararg targets: String): Boolean {
-        assert(source.isNotEmpty() && targets.isNotEmpty())
-
-        return targets.any { source.startsWith(it) }
+        return source.startsWithMultiple(*targets)
     }
 
     fun endsWithMultiple(source: String, vararg targets: String): Boolean {
-        assert(source.isNotEmpty() && targets.isNotEmpty())
-
-        return targets.any { source.endsWith(it) }
+        return source.endsWithMultiple(*targets)
     }
 
     fun containsMultiple(source: String, vararg targets: String): Boolean {
-        assert(source.isNotEmpty() && targets.isNotEmpty())
+        return source.containsMultiple(*targets)
+    }
 
-        return targets.any { source.contains(it) }
+    fun String?.startsWithMultiple(vararg targets: String): Boolean {
+        return !(isNullOrEmpty() || targets.isEmpty()) && targets.any { startsWith(it) }
+    }
+
+    fun String?.endsWithMultiple(vararg targets: String): Boolean {
+        return !(isNullOrEmpty() || targets.isEmpty()) && targets.any { endsWith(it) }
+    }
+
+    fun String?.containsMultiple(vararg targets: String): Boolean {
+        return !(isNullOrEmpty() || targets.isEmpty()) && targets.any { contains(it) }
     }
 
     fun generateRandomHex(length: Int): String {
@@ -80,25 +86,60 @@ object Utils {
     }
 
     fun getPackageNameFromResolveInfo(resolveInfo: ResolveInfo): String {
-        return resolveInfo.resolvePackageName ?:
-            resolveInfo.activityInfo?.packageName ?:
-            resolveInfo.serviceInfo?.packageName ?:
-            resolveInfo.providerInfo!!.packageName
+        return resolveInfo.getPackageName()
+    }
+
+    fun ResolveInfo.getPackageName(): String {
+        return resolvePackageName ?:
+            activityInfo?.packageName ?:
+            serviceInfo?.packageName ?:
+            providerInfo!!.packageName
     }
 
     fun checkSplitPackages(appInfo: ApplicationInfo, onZipFile: (String, ZipFile) -> Boolean): Boolean {
-        val allLocations = setOf(appInfo.sourceDir, appInfo.publicSourceDir) /*+
-                (appInfo.splitSourceDirs ?: arrayOf()) +
-                (appInfo.splitPublicSourceDirs ?: arrayOf())*/
+        return checkAPKFiles(appInfo, onZipFile)
+    }
 
+    fun checkAPKFiles(appInfo: ApplicationInfo, onZipFile: (String, ZipFile) -> Boolean): Boolean {
+        val allLocations = setOf(appInfo.sourceDir, appInfo.publicSourceDir)
         return allLocations.any { filePath ->
-            ZipFile(filePath).use { zipFile ->
-                if (onZipFile(filePath, zipFile)) {
-                    return true
-                }
+            try {
+                ZipFile(filePath).use { zipFile -> onZipFile(filePath, zipFile) }
+            } catch (_: Throwable) {
+                false
             }
-
-            return false
         }
+    }
+
+    @Suppress("DestructuringDeclaration")
+    fun JsonConfig.cleanRemnantsFromConfig() {
+        // STEP 1: Remove empty app and settings templates
+        templates.filter { (_, template) -> template.appList.isEmpty() }.forEach { templates.remove(it.key) }
+        settingsTemplates.filter { (_, template) -> template.settingsList.isEmpty() }.forEach { settingsTemplates.remove(it.key) }
+
+        // STEP 2: Remove mismatching items
+        for (app in scope.values) {
+            app.applyTemplates.removeAll { !templates.containsKey(it) }
+            app.applyPresets.removeAll { it !in AppPresets.instance.presetNames }
+            app.applySettingTemplates.removeAll { !settingsTemplates.containsKey(it) }
+            app.applySettingsPresets.removeAll { it !in SettingsPresets.instance.presetNames }
+        }
+    }
+
+    fun getCallingUser() = getUserFromCallingUid(Binder.getCallingUid())
+
+    fun getUserFromCallingUid(uid: Int) = uid / 100000
+
+    fun ApplicationInfo.isSystemApp() = flags and ApplicationInfo.FLAG_SYSTEM != 0 ||
+            flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0
+
+    val conflictedModules = arrayOf(
+        "com.tsng.hidemyapplist",
+        "com.google.android.hmal",
+    )
+
+    val encoder = kotlinx.serialization.json.Json {
+        encodeDefaults = true
+        ignoreUnknownKeys = true
     }
 }

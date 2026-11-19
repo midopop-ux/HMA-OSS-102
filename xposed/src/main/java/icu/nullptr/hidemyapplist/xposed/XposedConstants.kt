@@ -15,4 +15,12 @@ object XposedConstants {
     const val ACTIVITY_TASK_SUPERVISOR_CLASS = "com.android.server.wm.ActivityTaskSupervisor"
     const val ACTIVITY_STACK_SUPERVISOR_CLASS = "com.android.server.wm.ActivityStackSupervisor"
     const val ZYGOTE_PROCESS_CLASS = "android.os.ZygoteProcess"
+    const val USAGE_STATS_SERVICE_CLASS = "com.android.server.usage.UsageStatsService"
+    const val USAGE_STATS_BINDER_SERVICE_CLASS = $$"com.android.server.usage.UsageStatsService$BinderService"
+    const val BROADCAST_QUEUE_CLASS = "com.android.server.am.BroadcastQueue"
+    const val BROADCAST_QUEUE_IMPL_CLASS = "com.android.server.am.BroadcastQueueImpl"
+    const val BROADCAST_PROCESS_QUEUE_CLASS = "com.android.server.am.BroadcastProcessQueue"
+    const val ACTIVITY_MANAGER_SERVICE_CLASS = "com.android.server.am.ActivityManagerService"
+    const val ACTION_USB_STATE = "android.hardware.usb.action.USB_STATE"
+    const val USB_FUNCTION_ADB = "adb"
 }

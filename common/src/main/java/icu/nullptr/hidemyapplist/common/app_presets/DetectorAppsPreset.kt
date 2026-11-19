@@ -74,6 +74,16 @@ class DetectorAppsPreset  : BasePreset(NAME) {
             return true
         }
 
+        // Chunqiu detectors
+        if (packageName.containsMultiple("chunqiu", "chuqniu")) {
+            return true
+        }
+
+        // Duck Detector
+        if (packageName.endsWith(".duckdetector")) {
+            return true
+        }
+
         // Key attestation apps
         if (packageName.endsWith(".keyattestation")) {
             return true

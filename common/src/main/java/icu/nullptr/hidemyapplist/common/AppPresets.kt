@@ -54,6 +54,7 @@ class AppPresets private constructor() {
 
     val presetNames by lazy { presetList.map { it.name }.toTypedArray() }
     fun getPresetByName(name: String) = presetList.firstOrNull { it.name == name }
+    fun containsPackage(presetName: String, packageName: String) = getPresetByName(presetName)?.containsPackage(packageName) ?: false
 
     fun reloadPresets(appsList: List<ApplicationInfo>) {
         ignoredForRiskyPackagesList.clear()

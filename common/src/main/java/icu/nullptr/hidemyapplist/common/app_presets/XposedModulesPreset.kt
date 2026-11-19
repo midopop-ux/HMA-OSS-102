@@ -8,7 +8,9 @@ class XposedModulesPreset : BasePreset(NAME) {
         const val NAME = "xposed"
     }
 
-    override val exactPackageNames = setOf<String>()
+    override val exactPackageNames = setOf(
+        org.frknkrc44.hma_oss.common.BuildConfig.APP_PACKAGE_NAME,
+    )
 
     override fun canBeAddedIntoPreset(appInfo: ApplicationInfo): Boolean {
         return checkSplitPackages(appInfo) { _, zipFile ->
@@ -17,7 +19,12 @@ class XposedModulesPreset : BasePreset(NAME) {
                 return@checkSplitPackages true
             }
 
-            // New LSPosed method
+            // Modern libxposed method
+            if (zipFile.getEntry("META-INF/xposed/java_init.list") != null) {
+                return@checkSplitPackages true
+            }
+
+            // LSPosed method
             if (zipFile.getEntry("META-INF/xposed/module.prop") != null) {
                 return@checkSplitPackages true
             }

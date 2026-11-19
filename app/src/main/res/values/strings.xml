@@ -266,4 +266,15 @@
     <string name="dark_theme">Dark theme</string>
     <string name="dark_theme_off">Always off</string>
     <string name="dark_theme_on">Always on</string>
+
+    <!-- Backup & Restore -->
+    <string name="backup_restore_backup">Backup</string>
+    <string name="backup_restore_restore">Restore</string>
+    <string name="backup_restore_backup_settings">Backup settings</string>
+    <string name="backup_restore_restore_settings">Restore settings</string>
+    <string name="backup_restore_apps">App configs</string>
+    <string name="backup_restore_templates">Templates</string>
+    <string name="backup_restore_settings_templates">Settings templates</string>
+    <string name="backup_restore_append">Append</string>
+    <string name="backup_restore_items_count">%d items</string>
 </resources>

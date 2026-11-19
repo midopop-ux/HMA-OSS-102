@@ -17,6 +17,8 @@ import icu.nullptr.hidemyapplist.common.AppPresets
 import icu.nullptr.hidemyapplist.common.Constants
 import icu.nullptr.hidemyapplist.common.Constants.PARCEL_TYPE_CONFIG
 import icu.nullptr.hidemyapplist.common.Constants.PARCEL_TYPE_LOG
+import icu.nullptr.hidemyapplist.xposed.hook.UsageStatsHook
+import icu.nullptr.hidemyapplist.xposed.hook.BroadcastHook
 import icu.nullptr.hidemyapplist.common.FilterHolder
 import icu.nullptr.hidemyapplist.common.IHMAService
 import icu.nullptr.hidemyapplist.common.JsonConfig
@@ -240,6 +242,8 @@ class HMAService(val pms: IPackageManager, val pmn: Any?) : IHMAService.Stub() {
         frameworkHooks.add(ContentProviderHook(this))
         frameworkHooks.add(ImmHook(this))
         frameworkHooks.add(ZygoteHook(this))
+        frameworkHooks.add(UsageStatsHook(this))
+        frameworkHooks.add(BroadcastHook(this))
 
         frameworkHooks.forEach(IFrameworkHook::load)
         logI(TAG) { "Hooks installed" }

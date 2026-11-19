@@ -7,6 +7,9 @@
 -keep class icu.nullptr.hidemyapplist.data.** { *; }
 
 -keep,allowoptimization class * extends androidx.preference.PreferenceFragmentCompat
+-keep public class * extends androidx.fragment.app.Fragment {
+    public <init>();
+}
 -keepclassmembers class org.frknkrc44.hma_oss.databinding.**  {
     public <methods>;
 }

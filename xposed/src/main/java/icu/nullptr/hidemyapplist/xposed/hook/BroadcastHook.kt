@@ -93,6 +93,16 @@ class BroadcastHook(private val service: HMAService) : IFrameworkHook {
         val targetApp = component.packageName
 
         if (service.shouldHideActivityLaunch(caller, targetApp)) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM &&
+                param.method.name == "enqueueOrderedBroadcastLocked") {
+                // ignore the broadcasts for replacement if they have no receivers
+                val receivers = runCatching {
+                    val field = record.javaClass.getDeclaredField("receivers").apply { isAccessible = true }
+                    field.get(record) as? List<*>
+                }.getOrNull()
+                if (receivers.isNullOrEmpty()) return
+            }
+
             logD(TAG) { "@${param.method.name}: insecure broadcast query from $caller, target: $component" }
 
             runCatching {

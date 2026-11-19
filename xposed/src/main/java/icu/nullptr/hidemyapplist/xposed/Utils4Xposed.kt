@@ -9,18 +9,46 @@ import icu.nullptr.hidemyapplist.common.Constants
 import icu.nullptr.hidemyapplist.common.Utils
 
 object Utils4Xposed {
+    private val packageNameAccessors = java.util.concurrent.ConcurrentHashMap<Class<*>, (Any) -> String?>()
+
     fun getPackageNameFromPackageSettings(packageSettings: Any?): String? {
         if (packageSettings == null) return null
 
-        return try {
-            callMethod(packageSettings, "getPackageName") as String?
-        } catch (_: Throwable) {
-            runCatching {
-                findField(packageSettings::class.java, true) {
-                    name == if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) "mName" else "name"
-                }.get(packageSettings) as? String
-            }.getOrNull()
+        val accessor = packageNameAccessors.getOrPut(packageSettings.javaClass) {
+            resolvePackageNameAccessor(packageSettings.javaClass)
         }
+        return runCatching { accessor(packageSettings) }.getOrNull()
+    }
+
+    private fun resolvePackageNameAccessor(clazz: Class<*>): (Any) -> String? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val method = runCatching { clazz.getMethod("getPackageName") }.getOrNull()
+            if (method != null && method.parameterCount == 0) {
+                method.isAccessible = true
+                return { method.invoke(it) as? String }
+            }
+        }
+
+        for (name in arrayOf("mName", "name")) {
+            val field = runCatching {
+                var c: Class<*>? = clazz
+                var found: java.lang.reflect.Field? = null
+                while (c != null && found == null) {
+                    try {
+                        found = c.getDeclaredField(name)
+                    } catch (_: NoSuchFieldException) {
+                        c = c.superclass
+                    }
+                }
+                found?.takeIf { it.type == String::class.java }
+            }.getOrNull()
+            if (field != null) {
+                field.isAccessible = true
+                return { field.get(it) as? String }
+            }
+        }
+
+        return { null }
     }
 
     fun getPackageManager() = ActivityThread.currentActivityThread().application.packageManager!!

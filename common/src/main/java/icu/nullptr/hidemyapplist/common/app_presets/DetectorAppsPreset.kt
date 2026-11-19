@@ -1,6 +1,7 @@
 package icu.nullptr.hidemyapplist.common.app_presets
 
 import android.content.pm.ApplicationInfo
+import icu.nullptr.hidemyapplist.common.Utils
 
 class DetectorAppsPreset  : BasePreset(NAME) {
     companion object {
@@ -75,7 +76,7 @@ class DetectorAppsPreset  : BasePreset(NAME) {
         }
 
         // Chunqiu detectors
-        if (packageName.containsMultiple("chunqiu", "chuqniu")) {
+        if (Utils.containsMultiple(packageName, "chunqiu", "chuqniu")) {
             return true
         }
 

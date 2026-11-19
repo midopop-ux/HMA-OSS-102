@@ -7,10 +7,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import com.github.kyuubiran.ezxhelper.utils.findMethod
-import com.github.kyuubiran.ezxhelper.utils.hookAfter
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import de.robv.android.xposed.XC_MethodHook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.HookParam
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.Unhook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethod
+import icu.nullptr.hidemyapplist.xposed.hookAfter
+import icu.nullptr.hidemyapplist.xposed.hookBefore
 import icu.nullptr.hidemyapplist.xposed.HMAService
 import icu.nullptr.hidemyapplist.xposed.Logcat.logD
 import icu.nullptr.hidemyapplist.xposed.Utils4Xposed
@@ -22,7 +23,7 @@ class ContentProviderHook(private val service: HMAService): IFrameworkHook {
         private val NV_PAIR = arrayOf("name", "value")
     }
 
-    private val hooks = mutableListOf<XC_MethodHook.Unhook>()
+    private val hooks = mutableListOf<Unhook>()
 
     @Suppress("UNCHECKED_CAST")
     override fun load() {
@@ -154,7 +155,7 @@ class ContentProviderHook(private val service: HMAService): IFrameworkHook {
         }
     }
 
-    private fun getCallingPackages(param: XC_MethodHook.MethodHookParam) = try {
+    private fun getCallingPackages(param: HookParam) = try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val attrSource = param.args.first() as AttributionSource
             arrayOf(attrSource.packageName)
@@ -166,7 +167,7 @@ class ContentProviderHook(private val service: HMAService): IFrameworkHook {
     }
 
     override fun unload() {
-        hooks.forEach(XC_MethodHook.Unhook::unhook)
+        hooks.forEach(Unhook::unhook)
         hooks.clear()
     }
 }

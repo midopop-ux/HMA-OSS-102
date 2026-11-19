@@ -1,8 +1,8 @@
 package icu.nullptr.hidemyapplist.xposed.hook
 
-import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import de.robv.android.xposed.XC_MethodHook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.Unhook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethodOrNull
+import icu.nullptr.hidemyapplist.xposed.hookBefore
 import icu.nullptr.hidemyapplist.common.Constants
 import icu.nullptr.hidemyapplist.xposed.HMAService
 import icu.nullptr.hidemyapplist.xposed.Logcat.logD
@@ -14,7 +14,7 @@ class ZygoteHook(private val service: HMAService): IFrameworkHook {
         private const val TAG = "ZygoteHook"
     }
 
-    private val hooks = mutableListOf<XC_MethodHook.Unhook>()
+    private val hooks = mutableListOf<Unhook>()
 
     override fun load() {
         findMethodOrNull(ZYGOTE_PROCESS_CLASS) {
@@ -45,7 +45,7 @@ class ZygoteHook(private val service: HMAService): IFrameworkHook {
     }
 
     override fun unload() {
-        hooks.forEach(XC_MethodHook.Unhook::unhook)
+        hooks.forEach(Unhook::unhook)
         hooks.clear()
     }
 }

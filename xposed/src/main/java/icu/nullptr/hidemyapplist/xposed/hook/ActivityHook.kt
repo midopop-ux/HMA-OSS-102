@@ -3,15 +3,15 @@ package icu.nullptr.hidemyapplist.xposed.hook
 import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.os.Build
-import com.github.kyuubiran.ezxhelper.init.InitFields
-import com.github.kyuubiran.ezxhelper.utils.findMethod
-import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
-import com.github.kyuubiran.ezxhelper.utils.hookAfter
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedHelpers.findClass
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.getStaticIntField
+import icu.nullptr.hidemyapplist.xposed.XposedCompat
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.Unhook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethod
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethodOrNull
+import icu.nullptr.hidemyapplist.xposed.hookAfter
+import icu.nullptr.hidemyapplist.xposed.hookBefore
+import icu.nullptr.hidemyapplist.xposed.XposedHelpers.findClass
+import icu.nullptr.hidemyapplist.xposed.XposedHelpers.getObjectField
+import icu.nullptr.hidemyapplist.xposed.XposedHelpers.getStaticIntField
 import icu.nullptr.hidemyapplist.common.Constants
 import icu.nullptr.hidemyapplist.common.OSUtils
 import icu.nullptr.hidemyapplist.common.Utils
@@ -34,14 +34,14 @@ class ActivityHook(private val service: HMAService) : IFrameworkHook {
             getStaticIntField(
                 findClass(
                     "android.app.ActivityManager",
-                    InitFields.ezXClassLoader
+                    XposedCompat.classLoader
                 ),
                 "START_CLASS_NOT_FOUND"
             )
         }
     }
 
-    private val hooks = mutableListOf<XC_MethodHook.Unhook>()
+    private val hooks = mutableListOf<Unhook>()
 
     override fun load() {
         logI(TAG) { "Load hook" }
@@ -150,7 +150,7 @@ class ActivityHook(private val service: HMAService) : IFrameworkHook {
     }
 
     override fun unload() {
-        hooks.forEach(XC_MethodHook.Unhook::unhook)
+        hooks.forEach(Unhook::unhook)
         hooks.clear()
     }
 }

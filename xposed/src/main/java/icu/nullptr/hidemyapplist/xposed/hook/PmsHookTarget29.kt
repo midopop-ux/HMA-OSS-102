@@ -1,7 +1,7 @@
 package icu.nullptr.hidemyapplist.xposed.hook
 
-import com.github.kyuubiran.ezxhelper.utils.findMethod
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethod
+import icu.nullptr.hidemyapplist.xposed.hookBefore
 import icu.nullptr.hidemyapplist.xposed.HMAService
 import icu.nullptr.hidemyapplist.xposed.Logcat.logI
 import icu.nullptr.hidemyapplist.xposed.Utils4Xposed.getCallingApps

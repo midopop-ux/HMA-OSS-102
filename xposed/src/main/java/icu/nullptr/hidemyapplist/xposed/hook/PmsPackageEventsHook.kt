@@ -3,14 +3,14 @@ package icu.nullptr.hidemyapplist.xposed.hook
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import com.github.kyuubiran.ezxhelper.utils.findMethod
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import de.robv.android.xposed.XC_MethodHook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.Unhook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethod
+import icu.nullptr.hidemyapplist.xposed.hookBefore
 import icu.nullptr.hidemyapplist.xposed.HMAService
 import icu.nullptr.hidemyapplist.xposed.XposedConstants.PACKAGE_MANAGER_SERVICE_CLASS
 
 class PmsPackageEventsHook(private val service: HMAService) : IFrameworkHook {
-    private var hook: XC_MethodHook.Unhook? = null
+    private var hook: Unhook? = null
 
     override fun load() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

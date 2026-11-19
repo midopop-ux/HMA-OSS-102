@@ -22,8 +22,7 @@ dependencies {
     implementation(projects.common)
 
     implementation(libs.androidx.annotation.jvm)
-    implementation(libs.com.github.kyuubiran.ezxhelper)
     implementation(libs.dev.rikka.hidden.compat)
-    compileOnly(libs.de.robv.android.xposed.api)
+    compileOnly(libs.libxposed.api)
     compileOnly(libs.dev.rikka.hidden.stub)
 }

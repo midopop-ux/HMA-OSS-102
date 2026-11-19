@@ -11,8 +11,8 @@ import android.os.RemoteException
 import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
-import com.github.kyuubiran.ezxhelper.utils.isStatic
-import com.github.kyuubiran.ezxhelper.utils.removeIf
+import icu.nullptr.hidemyapplist.xposed.isStatic
+import icu.nullptr.hidemyapplist.xposed.removeIf
 import icu.nullptr.hidemyapplist.common.AppPresets
 import icu.nullptr.hidemyapplist.common.Constants
 import icu.nullptr.hidemyapplist.common.Constants.PARCEL_TYPE_CONFIG

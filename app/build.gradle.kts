@@ -125,6 +125,9 @@ android {
     packaging {
         dex.useLegacyPackaging = true
         resources {
+            pickFirsts += arrayOf(
+                "/META-INF/xposed/**",
+            )
             excludes += arrayOf(
                 "/META-INF/*",
                 "/META-INF/androidx/**",

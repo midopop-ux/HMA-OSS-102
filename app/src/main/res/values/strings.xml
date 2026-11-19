@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">HMA-OSS</string>
+    <string name="module_description">Hide your app list, settings, package installers and more.</string>
 
     <string name="title_home">Home</string>
     <string name="title_logs">Logs</string>
@@ -163,7 +164,7 @@
     <string name="settings_overwrite_summary">This category items will be forced as enabled if the switches are checked</string>
     <string name="settings_default_value">Default value: %s</string>
     <string name="settings_data_isolation">Data isolation</string>
-    <string name="settings_data_isolation_summary">App data: %s\nVold app data: %s\nForce mount: %s</string>
+    <string name="settings_data_isolation_summary" formatted="false">App data: %s\nVold app data: %s\nForce mount: %s</string>
     <string name="settings_data_isolation_unsupported">This option is only available on Android 11 and above</string>
     <string name="settings_app_data_isolation">App data isolation</string>
     <string name="settings_vold_app_data_isolation">Vold app data isolation</string>

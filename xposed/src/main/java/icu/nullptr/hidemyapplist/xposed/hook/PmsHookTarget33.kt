@@ -3,10 +3,10 @@ package icu.nullptr.hidemyapplist.xposed.hook
 import android.content.pm.PackageInstaller
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.github.kyuubiran.ezxhelper.utils.findConstructor
-import com.github.kyuubiran.ezxhelper.utils.findMethod
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import com.github.kyuubiran.ezxhelper.utils.paramCount
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findConstructor
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethod
+import icu.nullptr.hidemyapplist.xposed.hookBefore
+import icu.nullptr.hidemyapplist.xposed.paramCount
 import icu.nullptr.hidemyapplist.common.Constants.VENDING_PACKAGE_NAME
 import icu.nullptr.hidemyapplist.common.Utils
 import icu.nullptr.hidemyapplist.xposed.HMAService

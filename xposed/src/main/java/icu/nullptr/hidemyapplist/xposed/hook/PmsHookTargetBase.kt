@@ -5,13 +5,13 @@ import android.os.Binder
 import android.os.Build
 import android.os.UserHandle
 import android.util.ArrayMap
-import com.github.kyuubiran.ezxhelper.utils.findMethod
-import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
-import com.github.kyuubiran.ezxhelper.utils.hookAfter
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedHelpers
-import de.robv.android.xposed.XposedHelpers.callMethod
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.Unhook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethod
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethodOrNull
+import icu.nullptr.hidemyapplist.xposed.hookAfter
+import icu.nullptr.hidemyapplist.xposed.hookBefore
+import icu.nullptr.hidemyapplist.xposed.XposedHelpers
+import icu.nullptr.hidemyapplist.xposed.XposedHelpers.callMethod
 import icu.nullptr.hidemyapplist.common.Constants
 import icu.nullptr.hidemyapplist.common.Constants.VENDING_PACKAGE_NAME
 import icu.nullptr.hidemyapplist.common.OSUtils
@@ -34,7 +34,7 @@ abstract class PmsHookTargetBase(protected val service: HMAService) : IFramework
 
     private val androidPkgClazzNames = arrayOf("AndroidPackage", "PackageImpl")
 
-    protected val hooks = mutableListOf<XC_MethodHook.Unhook>()
+    protected val hooks = mutableListOf<Unhook>()
     protected var lastFilteredApp: AtomicReference<String?> = AtomicReference(null)
 
     protected val psPackageInfo by lazy {
@@ -315,7 +315,7 @@ abstract class PmsHookTargetBase(protected val service: HMAService) : IFramework
     }
 
     final override fun unload() {
-        hooks.forEach(XC_MethodHook.Unhook::unhook)
+        hooks.forEach(Unhook::unhook)
         hooks.clear()
     }
 }

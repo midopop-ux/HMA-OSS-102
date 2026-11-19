@@ -3,8 +3,8 @@ package icu.nullptr.hidemyapplist.xposed
 import android.app.ActivityThread
 import android.os.Binder
 import android.os.Build
-import com.github.kyuubiran.ezxhelper.utils.findField
-import de.robv.android.xposed.XposedHelpers.callMethod
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findField
+import icu.nullptr.hidemyapplist.xposed.XposedHelpers.callMethod
 import icu.nullptr.hidemyapplist.common.Constants
 import icu.nullptr.hidemyapplist.common.Utils
 

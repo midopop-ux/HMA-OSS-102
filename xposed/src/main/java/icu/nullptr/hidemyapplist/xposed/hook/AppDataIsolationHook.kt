@@ -3,11 +3,11 @@ package icu.nullptr.hidemyapplist.xposed.hook
 import android.os.Build
 import android.os.SystemProperties
 import androidx.annotation.RequiresApi
-import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
-import com.github.kyuubiran.ezxhelper.utils.hookAfter
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedHelpers
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.Unhook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethodOrNull
+import icu.nullptr.hidemyapplist.xposed.hookAfter
+import icu.nullptr.hidemyapplist.xposed.hookBefore
+import icu.nullptr.hidemyapplist.xposed.XposedHelpers
 import icu.nullptr.hidemyapplist.common.Utils
 import icu.nullptr.hidemyapplist.xposed.HMAService
 import icu.nullptr.hidemyapplist.xposed.Logcat.logD
@@ -26,7 +26,7 @@ class AppDataIsolationHook(private val service: HMAService): IFrameworkHook {
         private const val FUSE_PROP = "persist.sys.fuse"
     }
 
-    private val hooks = mutableListOf<XC_MethodHook.Unhook>()
+    private val hooks = mutableListOf<Unhook>()
     private var voldHookSkipped = false
 
     override fun load() {
@@ -211,7 +211,7 @@ class AppDataIsolationHook(private val service: HMAService): IFrameworkHook {
     }
 
     override fun unload() {
-        hooks.forEach(XC_MethodHook.Unhook::unhook)
+        hooks.forEach(Unhook::unhook)
         hooks.clear()
     }
 }

@@ -2,9 +2,9 @@ package icu.nullptr.hidemyapplist.xposed.hook
 
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.pm.ParceledListSlice
-import com.github.kyuubiran.ezxhelper.utils.findMethod
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import de.robv.android.xposed.XC_MethodHook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.Unhook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethod
+import icu.nullptr.hidemyapplist.xposed.hookBefore
 import icu.nullptr.hidemyapplist.common.settings_presets.AccessibilityPreset
 import icu.nullptr.hidemyapplist.xposed.HMAService
 import icu.nullptr.hidemyapplist.xposed.Logcat.logD
@@ -19,7 +19,7 @@ class AccessibilityHook(private val service: HMAService) : IFrameworkHook {
         private const val TAG = "AccessibilityHook"
     }
 
-    private val hookList = mutableSetOf<XC_MethodHook.Unhook>()
+    private val hookList = mutableSetOf<Unhook>()
 
     override fun load() {
         logI(TAG) { "Load hook" }
@@ -62,7 +62,7 @@ class AccessibilityHook(private val service: HMAService) : IFrameworkHook {
         service.getEnabledSettingsPresets(caller).contains(AccessibilityPreset.NAME)
 
     override fun unload() {
-        hookList.forEach(XC_MethodHook.Unhook::unhook)
+        hookList.forEach(Unhook::unhook)
         hookList.clear()
     }
 }

@@ -3,9 +3,9 @@ package icu.nullptr.hidemyapplist.xposed.hook
 import android.content.pm.ApplicationInfo
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.github.kyuubiran.ezxhelper.utils.findMethod
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import de.robv.android.xposed.XC_MethodHook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.Unhook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethod
+import icu.nullptr.hidemyapplist.xposed.hookBefore
 import icu.nullptr.hidemyapplist.common.PropertyUtils
 import icu.nullptr.hidemyapplist.xposed.HMAService
 import icu.nullptr.hidemyapplist.xposed.Logcat.logD
@@ -25,7 +25,7 @@ class PlatformCompatHook(private val service: HMAService) : IFrameworkHook {
         PropertyUtils.isAppDataIsolationEnabled || service.config.altAppDataIsolation
     }
 
-    private var hook: XC_MethodHook.Unhook? = null
+    private var hook: Unhook? = null
 
     override fun load() {
         if (!service.config.forceMountData) return

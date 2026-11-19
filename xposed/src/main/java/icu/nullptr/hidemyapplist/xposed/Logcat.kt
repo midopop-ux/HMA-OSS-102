@@ -2,7 +2,6 @@ package icu.nullptr.hidemyapplist.xposed
 
 import android.os.SystemProperties
 import android.util.Log
-import de.robv.android.xposed.XposedBridge
 import org.frknkrc44.hma_oss.common.BuildConfig
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -61,6 +60,10 @@ object Logcat {
 
         if (logdReady != true) return
 
-        XposedBridge.log(msg)
+        if (XposedCompat.isInitialized) {
+            XposedCompat.module.log(Log.INFO, "HMA", msg)
+        } else {
+            Log.i("HMA", msg)
+        }
     }
 }

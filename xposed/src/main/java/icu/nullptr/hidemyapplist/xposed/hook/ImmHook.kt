@@ -5,9 +5,10 @@ import android.os.Build
 import android.provider.Settings
 import android.view.inputmethod.InputMethodInfo
 import android.view.inputmethod.InputMethodSubtype
-import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import de.robv.android.xposed.XC_MethodHook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.HookParam
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.Unhook
+import icu.nullptr.hidemyapplist.xposed.XposedCompat.findMethodOrNull
+import icu.nullptr.hidemyapplist.xposed.hookBefore
 import icu.nullptr.hidemyapplist.common.Constants
 import icu.nullptr.hidemyapplist.common.Utils
 import icu.nullptr.hidemyapplist.common.settings_presets.InputMethodPreset
@@ -24,7 +25,7 @@ class ImmHook(private val service: HMAService) : IFrameworkHook {
         private const val TAG = "ImmHook"
     }
 
-    private val hooks = mutableListOf<XC_MethodHook.Unhook>()
+    private val hooks = mutableListOf<Unhook>()
 
     // TODO: Find a method to get settings activity
     fun getFakeInputMethodInfo(packageName: String): InputMethodInfo {
@@ -137,7 +138,7 @@ class ImmHook(private val service: HMAService) : IFrameworkHook {
         }
     }
 
-    private fun listHook(param: XC_MethodHook.MethodHookParam) {
+    private fun listHook(param: HookParam) {
         val callingApps = if (param.method.name.endsWith("Internal")) {
             val callingUid = param.args.last() as Int
             Utils4Xposed.getCallingApps(service, callingUid)
@@ -154,7 +155,7 @@ class ImmHook(private val service: HMAService) : IFrameworkHook {
         }
     }
 
-    private fun subtypeHook(param: XC_MethodHook.MethodHookParam) {
+    private fun subtypeHook(param: HookParam) {
         val callingApps = Utils4Xposed.getCallingApps(service)
 
         val caller = callingApps.firstOrNull { callerIsSpoofed(it) }
@@ -167,7 +168,7 @@ class ImmHook(private val service: HMAService) : IFrameworkHook {
         }
     }
 
-    private fun subtypeListHook(param: XC_MethodHook.MethodHookParam) {
+    private fun subtypeListHook(param: HookParam) {
         val callingApps = Utils4Xposed.getCallingApps(service)
 
         val caller = callingApps.firstOrNull { callerIsSpoofed(it) }
@@ -184,7 +185,7 @@ class ImmHook(private val service: HMAService) : IFrameworkHook {
         service.getEnabledSettingsPresets(caller).contains(InputMethodPreset.NAME)
 
     override fun unload() {
-        hooks.forEach(XC_MethodHook.Unhook::unhook)
+        hooks.forEach(Unhook::unhook)
         hooks.clear()
     }
 }

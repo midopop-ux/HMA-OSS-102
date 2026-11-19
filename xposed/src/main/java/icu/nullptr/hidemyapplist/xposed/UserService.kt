@@ -6,7 +6,6 @@ import android.content.pm.IPackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.ServiceManager
-import de.robv.android.xposed.XposedHelpers
 import icu.nullptr.hidemyapplist.common.Constants
 import icu.nullptr.hidemyapplist.common.Utils
 import icu.nullptr.hidemyapplist.xposed.Logcat.logD

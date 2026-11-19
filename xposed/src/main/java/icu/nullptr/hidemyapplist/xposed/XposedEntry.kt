@@ -1,13 +1,11 @@
 package icu.nullptr.hidemyapplist.xposed
 
 import android.content.pm.IPackageManager
-import com.github.kyuubiran.ezxhelper.init.EzXHelperInit
-import com.github.kyuubiran.ezxhelper.utils.findMethod
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import de.robv.android.xposed.IXposedHookLoadPackage
-import de.robv.android.xposed.IXposedHookZygoteInit
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
+import io.github.libxposed.api.XposedModule
+import io.github.libxposed.api.XposedModuleInterface
+import io.github.libxposed.api.XposedModuleInterface.ModuleLoadedParam
+import io.github.libxposed.api.XposedModuleInterface.PackageLoadedParam
+import io.github.libxposed.api.XposedModuleInterface.SystemServerStartingParam
 import icu.nullptr.hidemyapplist.common.Constants
 import icu.nullptr.hidemyapplist.xposed.Logcat.logD
 import icu.nullptr.hidemyapplist.xposed.Logcat.logE
@@ -17,21 +15,38 @@ import kotlin.concurrent.thread
 private const val TAG = "HMA-XposedEntry"
 
 @Suppress("unused")
-class XposedEntry : IXposedHookZygoteInit, IXposedHookLoadPackage {
-    var targetsLeft = mutableListOf("package", "package_native")
-    var targetStorage = mutableMapOf<String, Any?>()
+class XposedEntry : XposedModule() {
+    private var isHooked = false
+    private val targetsLeft = mutableListOf("package", "package_native")
+    private val targetStorage = mutableMapOf<String, Any?>()
 
-    override fun initZygote(startupParam: IXposedHookZygoteInit.StartupParam) {
-        EzXHelperInit.initZygote(startupParam)
+    override fun onModuleLoaded(param: ModuleLoadedParam) {
+        super.onModuleLoaded(param)
+        XposedCompat.init(this)
     }
 
-    override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
-        if (lpparam.packageName == Constants.ANDROID_PACKAGE_NAME) {
-            EzXHelperInit.initHandleLoadPackage(lpparam)
-            logI(TAG) { "Hook entry" }
+    override fun onSystemServerStarting(param: SystemServerStartingParam) {
+        super.onSystemServerStarting(param)
+        XposedCompat.init(this, param.classLoader)
+        initHooks(param.classLoader)
+    }
 
-            var serviceManagerHook: XC_MethodHook.Unhook? = null
-            serviceManagerHook = findMethod("android.os.ServiceManager") {
+    override fun onPackageLoaded(param: PackageLoadedParam) {
+        super.onPackageLoaded(param)
+        if (param.packageName == Constants.ANDROID_PACKAGE_NAME || param.packageName == "system") {
+            XposedCompat.init(this, param.defaultClassLoader)
+            initHooks(param.defaultClassLoader)
+        }
+    }
+
+    @Synchronized
+    private fun initHooks(classLoader: ClassLoader) {
+        if (isHooked) return
+        logI(TAG) { "Hook entry (libxposed API 102)" }
+
+        var serviceManagerHook: XposedCompat.Unhook? = null
+        try {
+            serviceManagerHook = XposedCompat.findMethod("android.os.ServiceManager", classLoader = classLoader) {
                 name == "addService"
             }.hookBefore { param ->
                 val name = param.args[0] as String
@@ -66,6 +81,9 @@ class XposedEntry : IXposedHookZygoteInit, IXposedHookLoadPackage {
                     }
                 }
             }
+            isHooked = true
+        } catch (t: Throwable) {
+            logE(TAG, t) { "Failed to hook ServiceManager.addService" }
         }
     }
 }

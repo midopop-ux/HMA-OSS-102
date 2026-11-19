@@ -393,7 +393,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         fetchLatestUpdate { updateInfo ->
-            if (updateInfo.versionName != BuildConfig.VERSION_NAME) {
+            val latest = updateInfo.versionName.removePrefix("v").trim()
+            val current = BuildConfig.VERSION_NAME.removePrefix("v").trim()
+            if (latest.isNotEmpty() && latest != current) {
                 withContext(Dispatchers.Main) {
                     MaterialAlertDialogBuilder(requireContext())
                         .setCancelable(false)

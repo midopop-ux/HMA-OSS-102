@@ -57,17 +57,15 @@ fun getUncommittedSuffix(): String {
     return "$returnedVal-dirty+${result.count { it == '\n' } + 1}"
 }
 
-val gitHasUncommittedSuffix = getUncommittedSuffix()
-val gitCommitCount = "git rev-list refs/remotes/origin/master --count".execute().toInt()
-
-// 432 is the count of commits before license changed
-val gitCommitCountAfterOss = gitCommitCount - 432
-
 val minSdkVer by extra(29)
 val targetSdkVer by extra(36)
 
-val appVerCode by extra(gitCommitCount + 0x6f7373) // commit count + 0xOSS
-val appVerName by extra("oss-${gitCommitCountAfterOss}${gitHasUncommittedSuffix}")
+val appVerCode by extra(
+    providers.environmentVariable("APP_VERSION_CODE").orNull?.toIntOrNull() ?: 1
+)
+val appVerName by extra(
+    providers.environmentVariable("APP_VERSION_NAME").orNull ?: "0.1"
+)
 
 /*
  * configVerCode, serviceVerCode and minBackupVerCode is used by other build.gradle.kts files
@@ -85,7 +83,7 @@ val serviceVerCode by extra(102)
 val minBackupVerCode by extra(65)
 
 @Suppress("unused")
-val appPackageName by extra("org.frknkrc44.hma_oss")
+val appPackageName by extra("org.midopop_ux.hma_102")
 
 @Suppress("unused")
 val localBuild by extra(localProperties.getProperty("localBuild", "false") == "true")

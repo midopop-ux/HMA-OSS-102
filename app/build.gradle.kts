@@ -58,64 +58,66 @@ val officialBuild: Boolean by rootProject.extra
 
 @Suppress("deprecation")
 afterEvaluate {
-    val srcDir = android.sourceSets["main"].assets.srcDirs.first()
-    logger.lifecycle("Asset dir: $srcDir")
-    if (!srcDir.exists()) srcDir.mkdirs()
+    runCatching {
+        val srcDir = android.sourceSets["main"].assets.srcDirs.first()
+        logger.lifecycle("Asset dir: $srcDir")
+        if (!srcDir.exists()) srcDir.mkdirs()
 
-    val translatorsMap = mutableMapOf(
-        // I used GitHub to get translations before moving to Crowdin.
-        // Since nearly all of GitHub translators are listed in Crowdin
-        // too, I wanted to add one profile here.
+        val translatorsMap = mutableMapOf(
+            "cvnertnc" to "https://avatars.githubusercontent.com/u/148134890?v=4",
+        )
 
-        "cvnertnc" to "https://avatars.githubusercontent.com/u/148134890?v=4",
-    )
-
-    val urlConnection = if (crowdinApiKey.isNotBlank()) {
-        val url = URL("https://crowdin.com/api/v2/projects/$crowdinProjectId/members")
-        (url.openConnection() as HttpURLConnection).apply {
-            setRequestProperty("authorization", "Bearer $crowdinApiKey")
-        }
-    } else {
-        val url = URL("https://github.com/frknkrc44/HMA-OSS/releases/latest/download/translators.json")
-        url.openConnection() as HttpURLConnection
-    }
-
-    val inputStream = DataInputStream(urlConnection.getInputStream())
-    val str = String(inputStream.readAllBytes())
-    inputStream.close()
-    urlConnection.disconnect()
-
-    val json = JsonParser.parseString(str).asJsonObject
-
-    if (crowdinApiKey.isNotBlank()) {
-        val translators = json.getAsJsonArray("data")
-
-        for (item in translators) {
-            val translator = item.asJsonObject.getAsJsonObject("data")
-            val avatarUrl = translator.get("avatarUrl").asString
-            val username = translator.get("username").asString
-            val fullName = try {
-                translator.get("fullName").asString
-            } catch (_: Throwable) {
-                ""
+        val urlConnection = if (crowdinApiKey.isNotBlank()) {
+            val url = URL("https://crowdin.com/api/v2/projects/$crowdinProjectId/members")
+            (url.openConnection() as HttpURLConnection).apply {
+                setRequestProperty("authorization", "Bearer $crowdinApiKey")
             }
-
-            if (fullName.isNotEmpty() && fullName != username) {
-                translatorsMap["$fullName ($username)"] = avatarUrl
-            } else {
-                translatorsMap[username] = avatarUrl
-            }
+        } else {
+            val url = URL("https://github.com/frknkrc44/HMA-OSS/releases/latest/download/translators.json")
+            url.openConnection() as HttpURLConnection
         }
-    } else {
-        json.keySet().forEach { translatorsMap[it] = json.get(it).asString }
-    }
 
-    val translatorJson = JSONObject(translatorsMap).toJSONString()
-    File(srcDir, "translators.json").writeText(translatorJson)
+        val inputStream = DataInputStream(urlConnection.getInputStream())
+        val str = String(inputStream.readAllBytes())
+        inputStream.close()
+        urlConnection.disconnect()
+
+        val json = JsonParser.parseString(str).asJsonObject
+
+        if (crowdinApiKey.isNotBlank()) {
+            val translators = json.getAsJsonArray("data")
+
+            for (item in translators) {
+                val translator = item.asJsonObject.getAsJsonObject("data")
+                val avatarUrl = translator.get("avatarUrl").asString
+                val username = translator.get("username").asString
+                val fullName = try {
+                    translator.get("fullName").asString
+                } catch (_: Throwable) {
+                    ""
+                }
+
+                if (fullName.isNotEmpty() && fullName != username) {
+                    translatorsMap["$fullName ($username)"] = avatarUrl
+                } else {
+                    translatorsMap[username] = avatarUrl
+                }
+            }
+        } else {
+            json.keySet().forEach { translatorsMap[it] = json.get(it).asString }
+        }
+
+        val translatorJson = JSONObject(translatorsMap).toJSONString()
+        File(srcDir, "translators.json").writeText(translatorJson)
+    }
 }
 
 android {
-    namespace = appPackageName
+    namespace = "org.frknkrc44.hma_oss"
+
+    defaultConfig {
+        applicationId = appPackageName
+    }
 
     buildFeatures {
         buildConfig = true

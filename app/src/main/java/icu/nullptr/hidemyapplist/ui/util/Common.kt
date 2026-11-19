@@ -20,4 +20,4 @@ fun <T> MutableSharedFlow<T>.get() = replayCache.first()
 
 fun dp2Px(res: Resources, dp: Int) = res.displayMetrics.density * dp
 
-val isTestBuild get() = BuildConfig.VERSION_NAME.count { it == '-' } != 1
+val isTestBuild get() = BuildConfig.DEBUG || BuildConfig.VERSION_NAME.contains("dirty")

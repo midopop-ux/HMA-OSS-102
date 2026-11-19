@@ -13,7 +13,7 @@ val appVerName: String by rootProject.extra
 val appVerCode: Int by rootProject.extra
 
 android {
-    namespace = "$appPackageName.common"
+    namespace = "org.frknkrc44.hma_oss.common"
 
     buildFeatures {
         aidl = true

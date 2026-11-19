@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">HMA-OSS</string>
+    <string name="app_name" translatable="false">HMA-102</string>
     <string name="module_description">Hide your app list, settings, package installers and more.</string>
 
     <string name="title_home">Home</string>

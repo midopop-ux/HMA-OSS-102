@@ -7,7 +7,7 @@ plugins {
 val appPackageName: String by rootProject.extra
 
 android {
-    namespace = "$appPackageName.xposed"
+    namespace = "org.frknkrc44.hma_oss.xposed"
 
     buildFeatures {
         buildConfig = false

@@ -100,26 +100,15 @@ object Utils {
     }
 
     @Suppress("DestructuringDeclaration")
-    fun JsonConfig.cleanRemnantsFromConfig() {
-        // STEP 1: Remove empty app and settings templates
-        templates.filter { (_, template) -> template.appList.isEmpty() }.forEach { templates.remove(it.key) }
-        settingsTemplates.filter { (_, template) -> template.settingsList.isEmpty() }.forEach { settingsTemplates.remove(it.key) }
-
-        // STEP 2: Remove mismatching items
-        for (app in scope.values) {
-            app.applyTemplates.removeAll { !templates.containsKey(it) }
-            app.applyPresets.removeAll { it !in AppPresets.instance.presetNames }
-            app.applySettingTemplates.removeAll { !settingsTemplates.containsKey(it) }
-            app.applySettingsPresets.removeAll { it !in SettingsPresets.instance.presetNames }
-        }
+    fun cleanRemnantsFromConfig(config: JsonConfig) {
+        config.cleanRemnantsFromConfig()
     }
 
     fun getCallingUser() = getUserFromCallingUid(Binder.getCallingUid())
 
     fun getUserFromCallingUid(uid: Int) = uid / 100000
 
-    fun ApplicationInfo.isSystemApp() = flags and ApplicationInfo.FLAG_SYSTEM != 0 ||
-            flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0
+    fun isSystemApp(appInfo: ApplicationInfo) = appInfo.isSystemApp()
 
     val conflictedModules = arrayOf(
         "com.tsng.hidemyapplist",
@@ -131,3 +120,22 @@ object Utils {
         ignoreUnknownKeys = true
     }
 }
+
+@Suppress("DestructuringDeclaration")
+fun JsonConfig.cleanRemnantsFromConfig() {
+    // STEP 1: Remove empty app and settings templates
+    templates.filter { (_, template) -> template.appList.isEmpty() }.forEach { templates.remove(it.key) }
+    settingsTemplates.filter { (_, template) -> template.settingsList.isEmpty() }.forEach { settingsTemplates.remove(it.key) }
+
+    // STEP 2: Remove mismatching items
+    for (app in scope.values) {
+        app.applyTemplates.removeAll { !templates.containsKey(it) }
+        app.applyPresets.removeAll { it !in AppPresets.instance.presetNames }
+        app.applySettingTemplates.removeAll { !settingsTemplates.containsKey(it) }
+        app.applySettingsPresets.removeAll { it !in SettingsPresets.instance.presetNames }
+    }
+}
+
+fun ApplicationInfo.isSystemApp() = flags and ApplicationInfo.FLAG_SYSTEM != 0 ||
+        flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0
+

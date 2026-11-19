@@ -12,15 +12,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.androidbroadcast.vbpd.viewBinding
-import icu.nullptr.hidemyapplist.common.CollectionUtils.removeIf
-import icu.nullptr.hidemyapplist.common.CollectionUtils.sync
 import icu.nullptr.hidemyapplist.common.Constants.CONFIG_VERSION_NO_SETTINGS
 import icu.nullptr.hidemyapplist.common.JsonConfig
-import icu.nullptr.hidemyapplist.common.Utils.cleanRemnantsFromConfig
+import icu.nullptr.hidemyapplist.common.cleanRemnantsFromConfig
+import icu.nullptr.hidemyapplist.common.removeIf
+import icu.nullptr.hidemyapplist.common.sync
 import icu.nullptr.hidemyapplist.service.ConfigManager
-import icu.nullptr.hidemyapplist.ui.util.applyPageWindowInsets
 import icu.nullptr.hidemyapplist.ui.util.contentResolver
 import icu.nullptr.hidemyapplist.ui.util.navController
+import icu.nullptr.hidemyapplist.ui.util.setEdge2EdgeFlags
 import icu.nullptr.hidemyapplist.ui.util.setupToolbar
 import icu.nullptr.hidemyapplist.ui.util.showToast
 import icu.nullptr.hidemyapplist.util.PackageHelper.loadAppLabel
@@ -121,7 +121,7 @@ class BackupRestoreFragment : Fragment(R.layout.fragment_backup_restore) {
             restoreSAFLauncher.launch("application/json")
         }
 
-        binding.root.applyPageWindowInsets()
+        setEdge2EdgeFlags(binding.root)
     }
 
     @SuppressLint("DefaultLocale")

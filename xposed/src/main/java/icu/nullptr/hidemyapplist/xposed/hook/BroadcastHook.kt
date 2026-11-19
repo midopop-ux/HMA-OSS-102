@@ -77,7 +77,7 @@ class BroadcastHook(private val service: HMAService) : IFrameworkHook {
     private fun handleEnqueueBroadcast(param: XposedCompat.HookParam) {
         if (param.args.isEmpty()) return
         // In queue methods, the broadcast record is typically the 1st or 2nd argument
-        val record = param.args.firstOrNull { it != null && it?.javaClass?.simpleName?.contains("BroadcastRecord") == true }
+        val record = param.args.firstOrNull { it?.javaClass?.simpleName?.contains("BroadcastRecord") == true }
             ?: (if (param.args.size > 1) param.args[1] else null) ?: return
 
         val caller = runCatching {

@@ -54,28 +54,16 @@ object Utils {
         }
     }
 
-    fun startsWithMultiple(source: String, vararg targets: String): Boolean {
-        return source.startsWithMultiple(*targets)
+    fun startsWithMultiple(source: String?, vararg targets: String): Boolean {
+        return !(source.isNullOrEmpty() || targets.isEmpty()) && targets.any { source.startsWith(it) }
     }
 
-    fun endsWithMultiple(source: String, vararg targets: String): Boolean {
-        return source.endsWithMultiple(*targets)
+    fun endsWithMultiple(source: String?, vararg targets: String): Boolean {
+        return !(source.isNullOrEmpty() || targets.isEmpty()) && targets.any { source.endsWith(it) }
     }
 
-    fun containsMultiple(source: String, vararg targets: String): Boolean {
-        return source.containsMultiple(*targets)
-    }
-
-    fun String?.startsWithMultiple(vararg targets: String): Boolean {
-        return !(isNullOrEmpty() || targets.isEmpty()) && targets.any { startsWith(it) }
-    }
-
-    fun String?.endsWithMultiple(vararg targets: String): Boolean {
-        return !(isNullOrEmpty() || targets.isEmpty()) && targets.any { endsWith(it) }
-    }
-
-    fun String?.containsMultiple(vararg targets: String): Boolean {
-        return !(isNullOrEmpty() || targets.isEmpty()) && targets.any { contains(it) }
+    fun containsMultiple(source: String?, vararg targets: String): Boolean {
+        return !(source.isNullOrEmpty() || targets.isEmpty()) && targets.any { source.contains(it) }
     }
 
     fun generateRandomHex(length: Int): String {

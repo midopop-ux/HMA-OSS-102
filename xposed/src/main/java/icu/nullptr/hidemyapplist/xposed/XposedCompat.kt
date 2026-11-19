@@ -159,7 +159,7 @@ fun <K, V> MutableMap<K, V>.removeIf(predicate: (K, V) -> Boolean) {
     }
 }
 
-fun Method.hookBefore(crossinline callback: (XposedCompat.HookParam) -> Unit): XposedCompat.Unhook {
+fun Method.hookBefore(callback: (XposedCompat.HookParam) -> Unit): XposedCompat.Unhook {
     isAccessible = true
     try {
         XposedCompat.module.deoptimize(this)
@@ -194,7 +194,7 @@ fun Method.hookBefore(crossinline callback: (XposedCompat.HookParam) -> Unit): X
     return XposedCompat.Unhook(handle, this)
 }
 
-fun Method.hookAfter(crossinline callback: (XposedCompat.HookParam) -> Unit): XposedCompat.Unhook {
+fun Method.hookAfter(callback: (XposedCompat.HookParam) -> Unit): XposedCompat.Unhook {
     isAccessible = true
     try {
         XposedCompat.module.deoptimize(this)

@@ -22,17 +22,18 @@ object XposedHelpers {
         throw NoSuchFieldException("Field $fieldName not found in ${clazz.name}")
     }
 
-    fun getObjectField(obj: Any, fieldName: String): Any? =
-        findField(obj.javaClass, fieldName).get(obj)
+    fun getObjectField(obj: Any?, fieldName: String): Any? =
+        obj?.let { findField(it.javaClass, fieldName).get(it) }
 
-    fun getIntField(obj: Any, fieldName: String): Int =
-        findField(obj.javaClass, fieldName).getInt(obj)
+    fun getIntField(obj: Any?, fieldName: String): Int =
+        obj?.let { findField(it.javaClass, fieldName).getInt(it) } ?: 0
 
-    fun getBooleanField(obj: Any, fieldName: String): Boolean =
-        findField(obj.javaClass, fieldName).getBoolean(obj)
+    fun getBooleanField(obj: Any?, fieldName: String): Boolean =
+        obj?.let { findField(it.javaClass, fieldName).getBoolean(it) } ?: false
 
-    fun setBooleanField(obj: Any, fieldName: String, value: Boolean) =
-        findField(obj.javaClass, fieldName).setBoolean(obj, value)
+    fun setBooleanField(obj: Any?, fieldName: String, value: Boolean) {
+        obj?.let { findField(it.javaClass, fieldName).setBoolean(it, value) }
+    }
 
     fun getStaticIntField(clazz: Class<*>, fieldName: String): Int {
         val f = findField(clazz, fieldName)
@@ -42,7 +43,8 @@ object XposedHelpers {
         return f.getInt(null)
     }
 
-    fun callMethod(obj: Any, methodName: String, vararg args: Any?): Any? {
+    fun callMethod(obj: Any?, methodName: String, vararg args: Any?): Any? {
+        if (obj == null) return null
         val clazz = obj.javaClass
         var current: Class<*>? = clazz
         while (current != null) {
@@ -54,11 +56,23 @@ object XposedHelpers {
             }
             current = current.superclass
         }
+        for (m in clazz.methods) {
+            if (m.name == methodName && m.parameterTypes.size == args.size) {
+                m.isAccessible = true
+                return m.invoke(obj, *args)
+            }
+        }
         throw NoSuchMethodException("Method $methodName with ${args.size} params not found in ${clazz.name}")
     }
 
     fun callStaticMethod(clazz: Class<*>, methodName: String, vararg args: Any?): Any? {
         for (m in clazz.declaredMethods) {
+            if (m.name == methodName && m.parameterTypes.size == args.size && Modifier.isStatic(m.modifiers)) {
+                m.isAccessible = true
+                return m.invoke(null, *args)
+            }
+        }
+        for (m in clazz.methods) {
             if (m.name == methodName && m.parameterTypes.size == args.size && Modifier.isStatic(m.modifiers)) {
                 m.isAccessible = true
                 return m.invoke(null, *args)

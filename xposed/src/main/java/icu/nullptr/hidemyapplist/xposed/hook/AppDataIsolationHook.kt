@@ -88,7 +88,7 @@ class AppDataIsolationHook(private val service: HMAService): IFrameworkHook {
             name == "needsStorageDataIsolation"
         }?.hookAfter { param ->
             if (service.config.altVoldAppDataIsolation) {
-                val app = param.args.find { it.javaClass.simpleName == "ProcessRecord" }
+                val app = param.args.find { it?.javaClass?.simpleName == "ProcessRecord" }
                 val uid = XposedHelpers.getIntField(app, "uid")
                 val processName = runCatching {
                     XposedHelpers.getObjectField(app, "processName")

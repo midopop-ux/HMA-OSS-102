@@ -78,7 +78,8 @@ class ActivityHook(private val service: HMAService) : IFrameworkHook {
             var throwable = param.throwable
 
             while (throwable != null) {
-                val newTrace = throwable.stackTrace.filter { item ->
+                val current = throwable
+                val newTrace = current.stackTrace.filter { item ->
                     !Utils.containsMultiple(
                         item.className,
                         "HookBridge",
@@ -87,17 +88,17 @@ class ActivityHook(private val service: HMAService) : IFrameworkHook {
                     )
                 }
 
-                if (newTrace.size != throwable.stackTrace.size) {
-                    throwable.stackTrace = newTrace.toTypedArray()
+                if (newTrace.size != current.stackTrace.size) {
+                    current.stackTrace = newTrace.toTypedArray()
 
                     val callingUid = param.args.lastOrNull { it is Int } as Int?
 
-                    logD(TAG) { "@checkStartAnyActivityPermission: ${throwable.stackTrace.size - newTrace.size} remnants cleared for $callingUid!" }
+                    logD(TAG) { "@checkStartAnyActivityPermission: ${current.stackTrace.size - newTrace.size} remnants cleared for $callingUid!" }
 
                     service.increaseALFilterCount(callingUid)
                 }
 
-                throwable = throwable.cause
+                throwable = current.cause
             }
         }?.let {
             hooks += it

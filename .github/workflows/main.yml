@@ -78,7 +78,7 @@ jobs:
         run: |
           ./gradlew assembleRelease
           mkdir -p final_apk
-          cp app/build/outputs/apk/release/*.apk final_apk/HMA-102-v${{ env.APP_VERSION_NAME }}-release.apk
+          cp app/build/outputs/apk/release/*.apk final_apk/HMA-102-v${{ env.APP_VERSION_NAME }}.apk
 
       - name: Verify APK Signature
         run: |
@@ -91,7 +91,7 @@ jobs:
       - name: Upload Release Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: HMA-102-v${{ env.APP_VERSION_NAME }}-release
+          name: HMA-102-v${{ env.APP_VERSION_NAME }}
           path: final_apk/*.apk
 
       - name: Upload ProGuard Mappings
@@ -114,4 +114,4 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            final_apk/HMA-102-v${{ env.APP_VERSION_NAME }}-release.apk
+            final_apk/HMA-102-v${{ env.APP_VERSION_NAME }}.apk

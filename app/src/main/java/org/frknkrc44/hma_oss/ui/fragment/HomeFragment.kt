@@ -360,7 +360,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         fetchLatestUpdate { updateInfo ->
             val latest = updateInfo.versionName.removePrefix("v").trim()
             val current = BuildConfig.VERSION_NAME.removePrefix("v").trim()
-            if (latest.isNotEmpty() && latest != current) {
+            if (latest.isNotEmpty() && isNewerVersion(latest, current)) {
                 withContext(Dispatchers.Main) {
                     MaterialAlertDialogBuilder(requireContext())
                         .setCancelable(false)
@@ -382,6 +382,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 }
             }
         }
+    }
+
+    private fun isNewerVersion(latest: String, current: String): Boolean {
+        val latestParts = latest.substringBefore("-").split(".").map { it.toIntOrNull() ?: 0 }
+        val currentParts = current.substringBefore("-").split(".").map { it.toIntOrNull() ?: 0 }
+        val maxLen = maxOf(latestParts.size, currentParts.size)
+        for (i in 0 until maxLen) {
+            val l = latestParts.getOrElse(i) { 0 }
+            val c = currentParts.getOrElse(i) { 0 }
+            if (l != c) return l > c
+        }
+        return false
     }
 
     companion object {

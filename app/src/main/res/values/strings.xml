@@ -44,7 +44,7 @@
     <string name="home_xposed_service_on">System service running [%d]</string>
     <string name="home_xposed_service_off">System service not running</string>
     <string name="home_xposed_service_old">Module updated, need reboot</string>
-    <string name="home_xposed_filter_count">HMA-OSS has filtered total %d requests</string>
+    <string name="home_xposed_filter_count">HMA-102 has filtered total %d requests</string>
     <string name="home_manage">Manage</string>
     <string name="home_detection_test">Detection test</string>
     <string name="home_download_test_app_title">Download test app</string>

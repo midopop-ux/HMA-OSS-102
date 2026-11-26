@@ -1,9 +1,4 @@
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
-import com.google.gson.JsonParser
-import org.jose4j.json.internal.json_simple.JSONObject
-import java.io.DataInputStream
-import java.net.HttpURLConnection
-import java.net.URL
 
 plugins {
     alias(libs.plugins.agp.app)
@@ -51,66 +46,8 @@ materialThemeBuilder {
 }
 
 val appPackageName: String by rootProject.extra
-val crowdinProjectId: String by rootProject.extra
-val crowdinApiKey: String by rootProject.extra
 val localBuild: Boolean by rootProject.extra
 val officialBuild: Boolean by rootProject.extra
-
-@Suppress("deprecation")
-afterEvaluate {
-    runCatching {
-        val srcDir = android.sourceSets["main"].assets.srcDirs.first()
-        logger.lifecycle("Asset dir: $srcDir")
-        if (!srcDir.exists()) srcDir.mkdirs()
-
-        val translatorsMap = mutableMapOf(
-            "cvnertnc" to "https://avatars.githubusercontent.com/u/148134890?v=4",
-        )
-
-        val urlConnection = if (crowdinApiKey.isNotBlank()) {
-            val url = URL("https://crowdin.com/api/v2/projects/$crowdinProjectId/members")
-            (url.openConnection() as HttpURLConnection).apply {
-                setRequestProperty("authorization", "Bearer $crowdinApiKey")
-            }
-        } else {
-            val url = URL("https://github.com/frknkrc44/HMA-OSS/releases/latest/download/translators.json")
-            url.openConnection() as HttpURLConnection
-        }
-
-        val inputStream = DataInputStream(urlConnection.getInputStream())
-        val str = String(inputStream.readAllBytes())
-        inputStream.close()
-        urlConnection.disconnect()
-
-        val json = JsonParser.parseString(str).asJsonObject
-
-        if (crowdinApiKey.isNotBlank()) {
-            val translators = json.getAsJsonArray("data")
-
-            for (item in translators) {
-                val translator = item.asJsonObject.getAsJsonObject("data")
-                val avatarUrl = translator.get("avatarUrl").asString
-                val username = translator.get("username").asString
-                val fullName = try {
-                    translator.get("fullName").asString
-                } catch (_: Throwable) {
-                    ""
-                }
-
-                if (fullName.isNotEmpty() && fullName != username) {
-                    translatorsMap["$fullName ($username)"] = avatarUrl
-                } else {
-                    translatorsMap[username] = avatarUrl
-                }
-            }
-        } else {
-            json.keySet().forEach { translatorsMap[it] = json.get(it).asString }
-        }
-
-        val translatorJson = JSONObject(translatorsMap).toJSONString()
-        File(srcDir, "translators.json").writeText(translatorJson)
-    }
-}
 
 android {
     namespace = "org.frknkrc44.hma_oss"
@@ -127,9 +64,6 @@ android {
     packaging {
         dex.useLegacyPackaging = true
         resources {
-            pickFirsts += arrayOf(
-                "/META-INF/xposed/**",
-            )
             excludes += arrayOf(
                 "/META-INF/*",
                 "/META-INF/androidx/**",

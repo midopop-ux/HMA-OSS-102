@@ -39,7 +39,7 @@
     <string name="home_xposed_service_on">خدمة النظام تعمل [%d]</string>
     <string name="home_xposed_service_off">خدمة النظام متوقفة</string>
     <string name="home_xposed_service_old">تم تحديث الإضافة، تحتاج إلى إعادة التشغيل</string>
-    <string name="home_xposed_filter_count">HMA-OSS قام بتصفية إجمالي %d من الطلبات</string>
+    <string name="home_xposed_filter_count">قام HMA-102 بتصفية إجمالي %d من الطلبات</string>
     <string name="home_manage">الإدارة</string>
     <string name="home_detection_test">اختبار الاكتشاف</string>
     <string name="home_download_test_app_title">تنزيل تطبيق الاختبار</string>
@@ -234,4 +234,14 @@
     <string name="dark_theme">سمة مظلمة</string>
     <string name="dark_theme_off">غلق دائما</string>
     <string name="dark_theme_on">تفعيل دائما</string>
+    <!-- Backup & Restore -->
+    <string name="backup_restore_backup">نسخ احتياطي</string>
+    <string name="backup_restore_restore">استعادة</string>
+    <string name="backup_restore_backup_settings">نسخ الإعدادات احتياطياً</string>
+    <string name="backup_restore_restore_settings">استعادة الإعدادات</string>
+    <string name="backup_restore_apps">إعدادات التطبيقات</string>
+    <string name="backup_restore_templates">القوالب</string>
+    <string name="backup_restore_settings_templates">قوالب الإعدادات</string>
+    <string name="backup_restore_append">دمج (إضافة)</string>
+    <string name="backup_restore_items_count">%d عنصر</string>
 </resources>

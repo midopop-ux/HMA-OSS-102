@@ -216,6 +216,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             }
         }
 
+        with(binding.navDetectionTest) {
+            text1.text = getString(R.string.home_detection_test)
+            icon.setImageResource(R.drawable.outline_shield_24)
+            root.setOnClickListener {
+                navigate(R.id.nav_detection_test)
+            }
+        }
+
         with(binding.navSettings) {
             text1.text = getString(R.string.title_settings)
             icon.setImageResource(R.drawable.outline_settings_24)

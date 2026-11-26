@@ -214,4 +214,9 @@
 
     </fragment>
 
+    <fragment
+        android:id="@+id/nav_detection_test"
+        android:name="org.frknkrc44.hma_oss.ui.fragment.DetectionTestFragment"
+        android:label="@string/home_detection_test" />
+
 </navigation>

@@ -56,6 +56,27 @@ class AppPresets private constructor() {
     fun getPresetByName(name: String) = presetList.firstOrNull { it.name == name }
     fun containsPackage(presetName: String, packageName: String) = getPresetByName(presetName)?.containsPackage(packageName) ?: false
 
+    fun loadFromCache(presetCache: PresetCache) {
+        RiskyPackageUtils.replaceIgnoredList(presetCache.riskyPackageCache)
+        presetList.forEach { preset ->
+            preset.replacePackageList(presetCache.cache[preset.name].orEmpty())
+        }
+        manifestDataCache.clear()
+    }
+
+    fun exportCache(appSignatures: Set<String>, appVersionCode: Int): PresetCache {
+        val map = mutableMapOf<String, MutableList<String>>()
+        presetList.forEach { preset ->
+            map[preset.name] = preset.packageNames.toMutableList()
+        }
+        return PresetCache(
+            appVersionCode = appVersionCode,
+            cache = map,
+            riskyPackageCache = ignoredForRiskyPackagesList.toMutableSet(),
+            allAppsList = appSignatures.toMutableSet(),
+        )
+    }
+
     fun reloadPresets(appsList: List<ApplicationInfo>) {
         ignoredForRiskyPackagesList.clear()
         presetList.forEach { it.clearPackageList() }

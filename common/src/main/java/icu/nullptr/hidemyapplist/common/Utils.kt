@@ -104,10 +104,6 @@ object Utils {
         config.cleanRemnantsFromConfig()
     }
 
-    fun getCallingUser() = getUserFromCallingUid(Binder.getCallingUid())
-
-    fun getUserFromCallingUid(uid: Int) = uid / 100000
-
     fun isSystemApp(appInfo: ApplicationInfo) = appInfo.isSystemApp()
 
     val conflictedModules = arrayOf(

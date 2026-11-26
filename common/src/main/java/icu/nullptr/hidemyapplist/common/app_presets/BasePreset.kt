@@ -1,11 +1,12 @@
 package icu.nullptr.hidemyapplist.common.app_presets
 
 import android.content.pm.ApplicationInfo
+import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.ZipFile
 
 abstract class BasePreset(val name: String) {
     protected abstract val exactPackageNames: Set<String>
-    internal val packageNames = mutableSetOf<String>()
+    internal val packageNames: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
     protected abstract fun canBeAddedIntoPreset(appInfo: ApplicationInfo): Boolean
 
@@ -14,6 +15,11 @@ abstract class BasePreset(val name: String) {
     val packages get() = packageNames + exactPackageNames
 
     fun clearPackageList() = packageNames.clear()
+
+    internal fun replacePackageList(packages: Collection<String>) {
+        packageNames.clear()
+        packageNames.addAll(packages)
+    }
 
     fun addPackageInfoPreset(appInfo: ApplicationInfo): Boolean {
         val packageName = appInfo.packageName

@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PresetCache(
+    val appVersionCode: Int = 0,
     val cache: MutableMap<String, MutableList<String>> = mutableMapOf(),
     val riskyPackageCache: MutableSet<String> = mutableSetOf(),
     val allAppsList: MutableSet<String> = mutableSetOf(),

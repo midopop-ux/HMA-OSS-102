@@ -12,7 +12,7 @@ import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
 import icu.nullptr.hidemyapplist.xposed.isStatic
-import icu.nullptr.hidemyapplist.xposed.removeIf
+import icu.nullptr.hidemyapplist.common.removeIf
 import icu.nullptr.hidemyapplist.common.AppPresets
 import icu.nullptr.hidemyapplist.common.Constants
 import icu.nullptr.hidemyapplist.common.Constants.PARCEL_TYPE_CONFIG
@@ -22,6 +22,7 @@ import icu.nullptr.hidemyapplist.xposed.hook.BroadcastHook
 import icu.nullptr.hidemyapplist.common.FilterHolder
 import icu.nullptr.hidemyapplist.common.IHMAService
 import icu.nullptr.hidemyapplist.common.JsonConfig
+import icu.nullptr.hidemyapplist.common.PresetCache
 import icu.nullptr.hidemyapplist.common.RiskyPackageUtils.appHasGMSConnection
 import icu.nullptr.hidemyapplist.common.SettingsPresets
 import icu.nullptr.hidemyapplist.common.Utils.binderLocalScope
@@ -55,6 +56,7 @@ import rikka.hidden.compat.ActivityManagerApis
 import rikka.hidden.compat.UserManagerApis
 import java.io.File
 import java.io.FileInputStream
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
@@ -82,6 +84,7 @@ class HMAService(val pms: IPackageManager, val pmn: Any?) : IHMAService.Stub() {
     private val frameworkHooks = mutableSetOf<IFrameworkHook>()
     val executor: ExecutorService = Executors.newSingleThreadExecutor()
     private val uidHideCache = mutableListOf<Triple<Int, String, MutableList<String>>>()
+    private val cachedAppSignatures: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
     var config = JsonConfig().apply { detailLog = true }
         private set
@@ -104,7 +107,7 @@ class HMAService(val pms: IPackageManager, val pmn: Any?) : IHMAService.Stub() {
         }
 
         thread {
-            reloadPresetsFromScratch()
+            loadOrReloadPresets()
         }
     }
 
@@ -153,15 +156,6 @@ class HMAService(val pms: IPackageManager, val pmn: Any?) : IHMAService.Stub() {
                 if (it.exists()) it.delete()
             }.onFailure { e ->
                 logW(TAG, e) { "Failed to delete filter count, skip it" }
-            }
-        }
-
-        // remove the preset cache
-        presetCacheFile.also {
-            runCatching {
-                if (it.exists()) it.delete()
-            }.onFailure { e ->
-                logW(TAG, e) { "Failed to delete preset cache, skip it" }
             }
         }
 
@@ -536,7 +530,13 @@ class HMAService(val pms: IPackageManager, val pmn: Any?) : IHMAService.Stub() {
         AppPresets.instance.apply {
             when (eventType) {
                 Intent.ACTION_PACKAGE_ADDED -> {
+                    val replacing = extras?.getBoolean(Intent.EXTRA_REPLACING) == true
+                    if (replacing) {
+                        handlePackageRemoved(packageName)
+                    }
                     handlePackageAdded(pms, packageName)
+                    refreshPackageSignature(packageName)
+                    writePresetCacheAsync()
                 }
                 Intent.ACTION_PACKAGE_REMOVED -> {
                     // ignore package updates
@@ -545,6 +545,19 @@ class HMAService(val pms: IPackageManager, val pmn: Any?) : IHMAService.Stub() {
                     }
 
                     handlePackageRemoved(packageName)
+                    refreshPackageSignature(packageName)
+                    writePresetCacheAsync()
+                }
+            }
+        }
+    }
+
+    private fun refreshPackageSignature(packageName: String) {
+        cachedAppSignatures.removeAll { it.startsWith("$packageName@") }
+        binderLocalScope {
+            UserManagerApis.getUserIdsNoThrow().forEach { id ->
+                getPackageInfoCompat(pms, packageName, 0L, id)?.applicationInfo?.let {
+                    cachedAppSignatures.add(buildAppSignature(it))
                 }
             }
         }
@@ -598,6 +611,14 @@ class HMAService(val pms: IPackageManager, val pmn: Any?) : IHMAService.Stub() {
     override fun getLogFileLocation(): String = logFile.absolutePath
 
     override fun reloadPresetsFromScratch() {
+        val (apps, signatures) = collectAppsAndSignatures()
+
+        AppPresets.instance.reloadPresets(apps)
+        logI(TAG) { "All presets are loaded" }
+        writePresetCacheAsync(signatures)
+    }
+
+    private fun collectAppsAndSignatures(): Pair<List<ApplicationInfo>, Set<String>> {
         val apps = mutableListOf<ApplicationInfo>().apply {
             binderLocalScope {
                 UserManagerApis.getUserIdsNoThrow().forEach { id ->
@@ -605,9 +626,54 @@ class HMAService(val pms: IPackageManager, val pmn: Any?) : IHMAService.Stub() {
                 }
             }
         }
+        val signatures = apps.mapTo(mutableSetOf()) { buildAppSignature(it) }
+        cachedAppSignatures.clear()
+        cachedAppSignatures.addAll(signatures)
+        return apps to signatures
+    }
 
-        AppPresets.instance.reloadPresets(apps)
-        logI(TAG) { "All presets are loaded" }
+    private fun buildAppSignature(appInfo: ApplicationInfo): String =
+        "${appInfo.packageName}@${appInfo.sourceDir.orEmpty()}"
+
+    private fun writePresetCacheAsync(signaturesSnapshot: Set<String> = cachedAppSignatures.toSet()) {
+        if (signaturesSnapshot.isEmpty()) return
+        executor.execute {
+            runCatching {
+                val data = AppPresets.instance.exportCache(signaturesSnapshot, BuildConfig.APP_VERSION_CODE)
+                presetCacheFile.writeText(data.toString())
+            }.onFailure { e ->
+                logW(TAG, e) { "Failed to write preset_cache.json" }
+            }
+        }
+    }
+
+    private fun loadOrReloadPresets() {
+        val (apps, signatures) = collectAppsAndSignatures()
+
+        val loadedFromCache = runCatching {
+            if (!presetCacheFile.exists()) return@runCatching false
+            val cached = PresetCache.parse(presetCacheFile.readText())
+            if (cached.appVersionCode != BuildConfig.APP_VERSION_CODE) {
+                logI(TAG) { "Preset cache version mismatch, rebuilding presets" }
+                return@runCatching false
+            }
+            if (cached.allAppsList != signatures) {
+                logI(TAG) { "Installed apps changed offline, rebuilding presets" }
+                return@runCatching false
+            }
+            AppPresets.instance.loadFromCache(cached)
+            logI(TAG) { "Presets loaded from cache (${signatures.size} apps)" }
+            true
+        }.getOrElse { e ->
+            logW(TAG, e) { "Failed to read preset cache, rebuilding" }
+            false
+        }
+
+        if (!loadedFromCache) {
+            AppPresets.instance.reloadPresets(apps)
+            logI(TAG) { "All presets are loaded (${signatures.size} apps)" }
+            writePresetCacheAsync(signatures)
+        }
     }
 
     override fun getDetailedFilterStats() = filterHolder.toString()

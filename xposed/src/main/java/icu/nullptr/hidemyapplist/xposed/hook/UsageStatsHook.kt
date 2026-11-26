@@ -22,6 +22,11 @@ class UsageStatsHook(private val service: HMAService) : IFrameworkHook {
 
     private val hookList = mutableSetOf<Unhook>()
     private val lastFilteredApp = AtomicReference<String?>(null)
+    private val eventsToWriteField: Field? by lazy {
+        runCatching {
+            UsageEvents::class.java.getDeclaredField("mEventsToWrite").apply { isAccessible = true }
+        }.getOrNull()
+    }
 
     override fun load() {
         logI(TAG) { "Load hook" }
@@ -86,6 +91,7 @@ class UsageStatsHook(private val service: HMAService) : IFrameworkHook {
 
     private fun findCaller(args: Array<Any?>): String? {
         val callers = Utils4Xposed.getCallingApps(service)
+        callers.firstOrNull { service.isHookEnabled(it) }?.let { return it }
         if (callers.isNotEmpty()) {
             return callers[0]
         }
@@ -102,10 +108,7 @@ class UsageStatsHook(private val service: HMAService) : IFrameworkHook {
     private fun applyUsageEventsHiding(methodName: String, events: UsageEvents, caller: String) {
         if (!service.isHookEnabled(caller)) return
 
-        val field: Field = runCatching {
-            UsageEvents::class.java.getDeclaredField("mEventsToWrite").apply { isAccessible = true }
-        }.getOrNull() ?: return
-
+        val field = eventsToWriteField ?: return
         val eventsList = field.get(events) as? List<UsageEvents.Event> ?: return
 
         val filtered = eventsList.filterTo(mutableListOf()) {

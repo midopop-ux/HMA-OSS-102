@@ -17,13 +17,37 @@ import icu.nullptr.hidemyapplist.xposed.XposedConstants.BROADCAST_QUEUE_IMPL_CLA
 import icu.nullptr.hidemyapplist.xposed.XposedConstants.USB_FUNCTION_ADB
 import icu.nullptr.hidemyapplist.xposed.hookBefore
 import org.frknkrc44.hma_oss.common.BuildConfig
+import java.lang.reflect.Field
+import java.util.concurrent.ConcurrentHashMap
 
 class BroadcastHook(private val service: HMAService) : IFrameworkHook {
     companion object {
         private const val TAG = "BroadcastHook"
     }
 
+    private class RecordFields(clazz: Class<*>) {
+        val callerPackage: Field? = findFieldOrNull(clazz, "callerPackage")
+        val targetComp: Field? = findFieldOrNull(clazz, "targetComp")
+        val receivers: Field? = findFieldOrNull(clazz, "receivers")
+        val intent: Field? = findFieldOrNull(clazz, "intent")
+
+        companion object {
+            private fun findFieldOrNull(clazz: Class<*>, name: String): Field? {
+                var c: Class<*>? = clazz
+                while (c != null) {
+                    try {
+                        return c.getDeclaredField(name).apply { isAccessible = true }
+                    } catch (_: NoSuchFieldException) {
+                        c = c.superclass
+                    }
+                }
+                return null
+            }
+        }
+    }
+
     private val hookList = mutableSetOf<Unhook>()
+    private val recordFieldCache = ConcurrentHashMap<Class<*>, RecordFields>()
 
     override fun load() {
         logI(TAG) { "Load hook" }
@@ -80,39 +104,32 @@ class BroadcastHook(private val service: HMAService) : IFrameworkHook {
         val record = param.args.firstOrNull { it?.javaClass?.simpleName?.contains("BroadcastRecord") == true }
             ?: (if (param.args.size > 1) param.args[1] else null) ?: return
 
-        val caller = runCatching {
-            val field = record.javaClass.getDeclaredField("callerPackage").apply { isAccessible = true }
-            field.get(record) as? String
-        }.getOrNull() ?: return
+        val fields = recordFieldCache.getOrPut(record.javaClass) {
+            RecordFields(record.javaClass)
+        }
 
-        val component = runCatching {
-            val field = record.javaClass.getDeclaredField("targetComp").apply { isAccessible = true }
-            field.get(record) as? ComponentName
-        }.getOrNull() ?: return
-
-        val targetApp = component.packageName
+        val caller = runCatching { fields.callerPackage?.get(record) as? String }.getOrNull() ?: return
+        val component = runCatching { fields.targetComp?.get(record) as? ComponentName }.getOrNull()
+        val intentObj = runCatching { fields.intent?.get(record) as? Intent }.getOrNull()
+        val targetApp = component?.packageName ?: intentObj?.`package` ?: return
 
         if (service.shouldHideActivityLaunch(caller, targetApp)) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM &&
                 param.method.name == "enqueueOrderedBroadcastLocked") {
                 // ignore the broadcasts for replacement if they have no receivers
                 val receivers = runCatching {
-                    val field = record.javaClass.getDeclaredField("receivers").apply { isAccessible = true }
-                    field.get(record) as? List<*>
+                    fields.receivers?.get(record) as? List<*>
                 }.getOrNull()
                 if (receivers.isNullOrEmpty()) return
             }
 
-            logD(TAG) { "@${param.method.name}: insecure broadcast query from $caller, target: $component" }
+            logD(TAG) { "@${param.method.name}: insecure broadcast query from $caller, target: ${component ?: targetApp}" }
 
-            runCatching {
-                val intentField = record.javaClass.getDeclaredField("intent").apply { isAccessible = true }
-                (intentField.get(record) as? Intent)?.apply {
-                    this.component = null
-                    this.`package` = "${BuildConfig.APP_PACKAGE_NAME}.${generateRandomHex(4)}"
-                }
-                service.increaseALFilterCount(caller)
+            intentObj?.apply {
+                this.component = null
+                this.`package` = "${BuildConfig.APP_PACKAGE_NAME}.${generateRandomHex(4)}"
             }
+            service.increaseALFilterCount(caller)
         }
     }
 

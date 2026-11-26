@@ -149,16 +149,6 @@ val Constructor<*>.paramCount: Int
 val Member.isStatic: Boolean
     get() = Modifier.isStatic(modifiers)
 
-fun <K, V> MutableMap<K, V>.removeIf(predicate: (K, V) -> Boolean) {
-    val it = entries.iterator()
-    while (it.hasNext()) {
-        val entry = it.next()
-        if (predicate(entry.key, entry.value)) {
-            it.remove()
-        }
-    }
-}
-
 class CompatBeforeHooker(
     private val targetMethod: Method,
     private val callback: (XposedCompat.HookParam) -> Unit
@@ -170,6 +160,8 @@ class CompatBeforeHooker(
         val param = XposedCompat.HookParam(chain, targetMethod, chain.thisObject, argsCopy)
 
         callback(param)
+
+        param.throwable?.let { throw it }
 
         if (param.isResultSubstituted) {
             return param.result
